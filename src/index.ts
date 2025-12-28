@@ -204,8 +204,29 @@ io.on('connection', (socket) => {
   // 5. Desconexão
   socket.on('disconnect', () => {
     console.log('Usuário desconectado:', socket.id);
-    // Aqui você pode adicionar lógica para remover o jogador da sala
-    // ou encerrar o jogo se alguém sair.
+
+    // Procura em todas as salas se esse socket estava jogando
+    // (Como são poucas salas em memória, um loop simples resolve)
+    for (const roomId in rooms) {
+      const room = rooms[roomId];
+      const playerIndex = room.players.findIndex(p => p.socketId === socket.id);
+
+      // Se achou o jogador numa sala
+      if (playerIndex !== -1) {
+        // Remove ele da lista
+        room.players.splice(playerIndex, 1);
+
+        // Se sobrou alguém na sala, avisa que o jogo acabou
+        if (room.players.length > 0) {
+          io.to(roomId).emit('opponent_left'); // <--- Evento novo
+        }
+
+        // Destrói a sala para liberar memória (já que o jogo quebrou)
+        delete rooms[roomId];
+        console.log(`Sala ${roomId} encerrada por desconexão.`);
+        break; // Sai do loop pois o user só pode estar em uma sala
+      }
+    }
   });
 });
 
