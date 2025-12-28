@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 // Enum igual ao do Frontend para identificar o tipo de linha
 enum Linha {
@@ -67,8 +67,8 @@ io.on('connection', (socket) => {
   // 1. Criar Sala
   socket.on('create_room', ({ name, boardSize }) => {
     // Gera um ID curto de 5 caracteres
-    const roomId = uuidv4().slice(0, 5).toUpperCase();
-    
+    const roomId = randomUUID().slice(0, 5).toUpperCase();
+
     rooms[roomId] = {
       id: roomId,
       boardSize,
